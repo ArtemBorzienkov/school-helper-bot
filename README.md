@@ -1,1 +1,1 @@
-# shool-helper-bot
+# school-helper-bot
