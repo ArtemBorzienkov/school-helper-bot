@@ -3,6 +3,37 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const childBotToken = '5840880445:AAGGsOmoRDvBmzahL_CFtymso6ZAxdb1w3A';
 const teacherBotToken = '5816908726:AAF1ZC9chK27u0CloRrMkQnZ8wF7uPDm4UE';
+
+const createSchoolsDB = `CREATE TABLE IF NOT EXISTS schools (
+  id text not null PRIMARY KEY,
+  name text not null,
+  region text not null
+);`
+const createGroupsDB = `CREATE TABLE IF NOT EXISTS groups (
+  id text not null,
+  school_id text not null,
+  name text not null,
+  subjects text not null,
+  PRIMARY KEY (id, school_id)
+);`
+const createTeachersDB = `CREATE TABLE IF NOT EXISTS teachers (
+  id text not null,
+  school_id text not null,
+  name text not null,
+  subjects text not null,
+  groups text not null,
+  PRIMARY KEY (school_id, id)
+);`
+const createSubjectsDB = `CREATE TABLE IF NOT EXISTS subjects (
+  school_id text not null,
+  group_id text not null,
+  teacher_id text not null,
+  name text not null,
+  home_task text not null,
+  updated_at integer not null,
+  PRIMARY KEY (school_id, group_id, teacher_id, name)
+);`
+
 const queryGetSchools = 'SELECT id, name, region FROM schools'
 const queryGetGroupsBySchool = 'SELECT id, school_id, name, subjects FROM groups WHERE school_id=$1'
 const queyGetSubjectsByGroupAndSchool = 'SELECT school_id, group_id, teacher_id, name, home_task, updated_at FROM subjects WHERE school_id=$1 AND group_id=$2'
@@ -21,6 +52,13 @@ const server = {
   pgClient: null,
 }
 
+async function ensureDbsCreated() {
+  await server.client.query(createSchoolsDB)
+  await server.client.query(createGroupsDB)
+  await server.client.query(createTeachersDB)
+  await server.client.query(createSubjectsDB)
+}
+
 async function init() {
   server.childBot = new TelegramBot(childBotToken, {polling: true});
   server.teacherBot = new TelegramBot(teacherBotToken, {polling: true});
@@ -31,6 +69,8 @@ async function init() {
   teacherMemoryMap = new Map()
   childMemoryMap = new Map()
   await server.client.connect()
+  await ensureDbsCreated()
+  await seedMockedData()
 }
 
 init()
@@ -258,4 +298,151 @@ function parseDate(d) {
   const date = new Date(d * 1000)
   const months = ['Січня', 'Лютого', 'Березня', 'Квітня', 'Травня', 'Червня', 'Липня', 'Серпня', 'Вересня', 'Жовтня', 'Листопада']
   return `${date.getDate()} ${months[date.getMonth() || 0]} ${date.getFullYear()}`
+}
+
+const insertMockSchool1 = `INSERT INTO schools (id, name, region) values (
+  '2826700811663785001', 
+  'school 1',
+  'Харків'
+);`
+
+const insertMockSchool2 = `INSERT INTO schools (id, name, region) values (
+  '2826700811663785002', 
+  'school 2',
+  'Київ'
+);`
+
+const insertMockGroup1 = `INSERT INTO groups (id, school_id, name, subjects) values (
+  '2826700811663785111', 
+  '2826700811663785001',
+  '11Г',
+  'алгебра,геометрія'
+);`
+
+const insertMockGroup2 = `INSERT INTO groups (id, school_id, name, subjects) values (
+  '2826700811663785112', 
+  '2826700811663785001',
+  '10А',
+  'алгебра,геометрія'
+);`
+
+const insertMockGroup3 = `INSERT INTO groups (id, school_id, name, subjects) values (
+  '2826700811663785121', 
+  '2826700811663785002',
+  '5Г',
+  'алгебра,геометрія'
+);`
+
+const insertMockGroup4 = `INSERT INTO groups (id, school_id, name, subjects) values (
+  '2826700811663785122', 
+  '2826700811663785002',
+  '6А',
+  'алгебра,геометрія'
+);`
+
+const insertMockTeacher1 = `INSERT INTO teachers (id, school_id, name, subjects, groups) values (
+  '658142569',
+  '2826700811663785001', 
+  'Артем Едуардович',
+  'алгебра,геометрія',
+  '2826700811663785111,2826700811663785112'
+);`
+
+const insertMockTeacher2 = `INSERT INTO teachers (id, school_id, name, subjects, groups) values (
+  '255286100',
+  '2826700811663785002', 
+  'Анна Петрівна',
+  'алгебра,геометрія',
+  '2826700811663785121,2826700811663785122'
+);`
+
+const insertMockSubject1 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785002',
+  '2826700811663785122', 
+  '255286100',
+  'алгебра',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject2 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785002',
+  '2826700811663785121', 
+  '255286100',
+  'алгебра',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject3 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785002',
+  '2826700811663785122', 
+  '255286100',
+  'геометрія',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject4 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785002',
+  '2826700811663785121', 
+  '255286100',
+  'геометрія',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject5 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785001',
+  '2826700811663785112', 
+  '658142569',
+  'алгебра',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject6 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785001',
+  '2826700811663785111', 
+  '658142569',
+  'алгебра',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject7 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785001',
+  '2826700811663785112', 
+  '658142569',
+  'геометрія',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+const insertMockSubject8 = `INSERT INTO subjects (school_id, group_id, teacher_id, name, home_task, updated_at) values (
+  '2826700811663785001',
+  '2826700811663785111', 
+  '658142569',
+  'геометрія',
+  'вивчить хочаб шось',
+  1673262317
+);`
+
+async function seedMockedData() {
+  await server.client.query(insertMockSchool1)
+  await server.client.query(insertMockSchool2)
+  await server.client.query(insertMockGroup1)
+  await server.client.query(insertMockGroup2)
+  await server.client.query(insertMockGroup3)
+  await server.client.query(insertMockGroup4)
+  await server.client.query(insertMockTeacher1)
+  await server.client.query(insertMockTeacher2)
+  await server.client.query(insertMockSubject1)
+  await server.client.query(insertMockSubject2)
+  await server.client.query(insertMockSubject3)
+  await server.client.query(insertMockSubject4)
+  await server.client.query(insertMockSubject5)
+  await server.client.query(insertMockSubject6)
+  await server.client.query(insertMockSubject7)
+  await server.client.query(insertMockSubject8)
 }
