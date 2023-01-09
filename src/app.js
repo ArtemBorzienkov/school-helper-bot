@@ -60,17 +60,25 @@ async function ensureDbsCreated() {
 }
 
 async function init() {
-  server.childBot = new TelegramBot(childBotToken, {polling: true});
-  server.teacherBot = new TelegramBot(teacherBotToken, {polling: true});
-  server.client = new Client({
-    connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.DB_NAME}`
-  })
-
-  teacherMemoryMap = new Map()
-  childMemoryMap = new Map()
-  await server.client.connect()
-  await ensureDbsCreated()
-  await seedMockedData()
+  try {
+    server.childBot = new TelegramBot(childBotToken, {polling: true});
+    server.teacherBot = new TelegramBot(teacherBotToken, {polling: true});
+    console.log("🚀 ~ file: app.js:68 ~ init ~ process.env.DB_USER", process.env.DB_USER)
+    console.log("🚀 ~ file: app.js:69 ~ init ~ process.env.DB_NAME", process.env.DB_NAME)
+    console.log("🚀 ~ file: app.js:69 ~ init ~ process.env.DB_HOST", process.env.DB_HOST)
+    console.log("🚀 ~ file: app.js:69 ~ init ~ process.env.DB_PASS", process.env.DB_PASS)
+    server.client = new Client({
+      connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+    })
+  
+    teacherMemoryMap = new Map()
+    childMemoryMap = new Map()
+    await server.client.connect()
+    await ensureDbsCreated()
+  } catch (e) {
+    console.log('error:', e)
+  }
+  // await seedMockedData()
 }
 
 init()
