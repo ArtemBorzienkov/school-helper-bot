@@ -18,5 +18,5 @@ COPY . .
 WORKDIR /usr/app/src
 
 EXPOSE 8080
-ENV DB_USER="postgres" DB_PASS="mysecretpassword" DB_HOST="host.docker.internal:5432" DB_NAME="postgres"
+ENV DB_USER="doadmin" DB_PASS="AVNS_NBBOb4ar5CFDbn5oGL7" DB_HOST="db-postgresql-ams3-90808-do-user-7508816-0.b.db.ondigitalocean.com:25060" DB_NAME="defaultdb" NODE_TLS_REJECT_UNAUTHORIZED="0"
 CMD [ "node", "app.js" ]

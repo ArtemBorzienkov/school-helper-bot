@@ -68,17 +68,17 @@ async function init() {
     console.log("🚀 ~ file: app.js:69 ~ init ~ process.env.DB_HOST", process.env.DB_HOST)
     console.log("🚀 ~ file: app.js:69 ~ init ~ process.env.DB_PASS", process.env.DB_PASS)
     server.client = new Client({
-      connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+      connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/${process.env.DB_NAME}?sslmode=require`
     })
-  
+
     teacherMemoryMap = new Map()
     childMemoryMap = new Map()
     await server.client.connect()
     await ensureDbsCreated()
+    // await seedMockedData()
   } catch (e) {
     console.log('error:', e)
   }
-  // await seedMockedData()
 }
 
 init()
